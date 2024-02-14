@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class CategoryController extends Controller
 {
@@ -62,10 +63,12 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        //
-        $category = Category::findOrFail($id);
-       
-        return response($category, 200); 
+        try {
+            $category = Category::findOrFail($id);
+            return response()->json($category, 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'Category not found.'], 404);
+        }
     }
 
     /**
@@ -90,5 +93,16 @@ class CategoryController extends Controller
     public function destroy(string $id)
     {
         //
+        try {
+            $category = Category::findOrFail($id);
+            $category->delete();
+            return response()->json([
+                'message'=> 'Deleted Successfully!!',
+            ]);
+           
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'No Category Asscociated with that ID!!.'], 404);
+        }
+       
     }
 }
